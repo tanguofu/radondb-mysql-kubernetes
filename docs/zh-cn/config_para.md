@@ -36,6 +36,7 @@
 | :-------------------------- | :----------------------------------------------- | :------------------------ |
 | Replicas                    | 集群节点数，只允许为0、2、3 和 5                   | 3                         |
 | PodPolicy.ImagePullPolicy   | 镜像拉取策略, 只允许为 Always/IfNotPresent/Never | IfNotPresent              |
+| PodPolicy.ImagePullSecrets  | 镜像拉取密钥                                    | 空              |
 | PodPolicy.Labels            | 节点 Pod [标签](https://kubernetes.io/zh/docs/concepts/overview/working-with-objects/labels/)                         | -                         |
 | PodPolicy.Annotations       | 节点 Pod [注解](https://kubernetes.io/zh/docs/concepts/overview/working-with-objects/annotations/)                         | -                         |
 | PodPolicy.Affinity          | 节点 Pod [亲和性](https://kubernetes.io/zh/docs/concepts/scheduling-eviction/assign-pod-node/#%E4%BA%B2%E5%92%8C%E6%80%A7%E4%B8%8E%E5%8F%8D%E4%BA%B2%E5%92%8C%E6%80%A7)                     | -                         |

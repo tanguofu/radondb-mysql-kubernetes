@@ -32,6 +32,13 @@ type BackupSpec struct {
 	// +kubebuilder:default:="radondb/mysql57-sidecar:v3.0.0"
 	Image string `json:"image"`
 
+	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+	// If specified, these secrets will be passed to individual puller implementations for them to use. For example,
+	// in the case of docker, only DockerConfig type secrets are honored.
+	// More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod
+	// +optional
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
+
 	// HostName represents the host for which to take backup
 	// If is empty, is use leader HostName
 	HostName string `json:"hostName,omitempty"`

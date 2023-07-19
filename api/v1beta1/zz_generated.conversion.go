@@ -274,6 +274,7 @@ func autoConvert_v1beta1_BackupSpec_To_v1alpha1_BackupSpec(in *BackupSpec, out *
 
 func autoConvert_v1alpha1_BackupSpec_To_v1beta1_BackupSpec(in *v1alpha1.BackupSpec, out *BackupSpec, s conversion.Scope) error {
 	// WARNING: in.Image requires manual conversion: does not exist in peer-type
+	// WARNING: in.ImagePullSecrets requires manual conversion: does not exist in peer-type
 	// WARNING: in.HostName requires manual conversion: does not exist in peer-type
 	// WARNING: in.NFSServerAddress requires manual conversion: does not exist in peer-type
 	out.ClusterName = in.ClusterName
@@ -420,6 +421,7 @@ func autoConvert_v1beta1_MysqlClusterSpec_To_v1alpha1_MysqlClusterSpec(in *Mysql
 	// WARNING: in.Image requires manual conversion: does not exist in peer-type
 	// WARNING: in.MaxLagSeconds requires manual conversion: does not exist in peer-type
 	// WARNING: in.ImagePullPolicy requires manual conversion: does not exist in peer-type
+	// WARNING: in.ImagePullSecrets requires manual conversion: does not exist in peer-type
 	// WARNING: in.Tolerations requires manual conversion: does not exist in peer-type
 	// WARNING: in.Affinity requires manual conversion: does not exist in peer-type
 	// WARNING: in.PriorityClassName requires manual conversion: does not exist in peer-type

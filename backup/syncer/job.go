@@ -133,6 +133,7 @@ func (s *jobSyncer) ensurePodSpec(in corev1.PodSpec) corev1.PodSpec {
 	sctName := fmt.Sprintf("%s-secret", s.backup.Spec.ClusterName)
 	in.Containers[0].Name = utils.ContainerBackupName
 	in.Containers[0].Image = mysqlcluster.GetImage(s.backup.Spec.Image)
+	in.ImagePullSecrets = s.backup.Spec.ImagePullSecrets
 	in.ServiceAccountName = s.backup.Spec.ClusterName
 	if len(s.backup.Spec.NFSServerAddress) != 0 {
 		//parse NFSServerAddress to IP:/Path

@@ -141,9 +141,9 @@ type MySQLUserCondition struct {
 	Message string `json:"message"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-//+kubebuilder:subresource:finalizers
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:subresource:finalizers
 // +kubebuilder:printcolumn:name="UserName",type="string",JSONPath=".spec.user",description="The name of the MySQL user"
 // +kubebuilder:printcolumn:name="SuperUser",type="boolean",JSONPath=".spec.withGrantOption",description="Whether the user can grant other users"
 // +kubebuilder:printcolumn:name="Hosts",type="string",JSONPath=".spec.hosts",description="The hosts that the user is allowed to connect from"
@@ -162,7 +162,7 @@ type MysqlUser struct {
 	Status UserStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 // MysqlUserList contains a list of MysqlUser.
 type MysqlUserList struct {
 	metav1.TypeMeta `json:",inline"`

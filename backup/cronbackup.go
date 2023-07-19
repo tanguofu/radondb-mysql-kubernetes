@@ -22,6 +22,7 @@ import (
 	"sort"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -39,6 +40,7 @@ type CronJob struct {
 
 	BackupScheduleJobsHistoryLimit *int
 	Image                          string
+	ImagePullSecrets               []corev1.LocalObjectReference
 	NFSServerAddress               string
 	BackupType                     string
 
@@ -147,7 +149,8 @@ func (j *CronJob) createBackup() (*apiv1alpha1.Backup, error) {
 		Spec: apiv1alpha1.BackupSpec{
 			ClusterName: j.ClusterName,
 			//TODO modify to cluster sidecar image
-			Image: j.Image,
+			Image:            j.Image,
+			ImagePullSecrets: j.ImagePullSecrets,
 			//RemoteDeletePolicy: j.BackupRemoteDeletePolicy,
 			HostName: fmt.Sprintf("%s-mysql-0", j.ClusterName),
 		},

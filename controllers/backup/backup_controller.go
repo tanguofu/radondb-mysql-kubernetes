@@ -536,6 +536,7 @@ func generateBackupJobSpec(backup *v1beta1.Backup, cluster *v1beta1.MysqlCluster
 				Containers:         []corev1.Container{container},
 				RestartPolicy:      corev1.RestartPolicyNever,
 				ServiceAccountName: serviceAccountName,
+				ImagePullSecrets:   cluster.Spec.ImagePullSecrets,
 			},
 		},
 	}

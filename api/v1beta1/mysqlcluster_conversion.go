@@ -63,6 +63,7 @@ func Convert_v1alpha1_MysqlClusterSpec_To_v1beta1_MysqlClusterSpec(in *v1alpha1.
 	// }
 	//TODO in.MysqlOpts.Database in.MysqlOpts.InitTokuDB
 	out.Image = in.MysqlOpts.Image
+	out.ImagePullSecrets = in.PodPolicy.ImagePullSecrets
 	out.MaxLagSeconds = in.MysqlOpts.MaxLagSeconds
 	out.MySQLConfig.ConfigMapName = in.MysqlOpts.MysqlConfTemplate
 	out.MySQLConfig.MysqlConfig = *(*map[string]string)(unsafe.Pointer(&in.MysqlOpts.MysqlConf))

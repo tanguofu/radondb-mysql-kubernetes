@@ -170,6 +170,8 @@ func (r *BackupCronReconciler) updateClusterSchedule(ctx context.Context, cluste
 				log.Info("update cluster image", "key", cluster, "image", cluster.Spec.PodPolicy.SidecarImage)
 				j.Image = cluster.Spec.PodPolicy.SidecarImage
 			}
+
+			j.ImagePullSecrets = cluster.Spec.PodPolicy.ImagePullSecrets
 			return nil
 		}
 	}
@@ -185,6 +187,7 @@ func (r *BackupCronReconciler) updateClusterSchedule(ctx context.Context, cluste
 		Namespace:                      cluster.Namespace,
 		Client:                         r.Client,
 		Image:                          cluster.Spec.PodPolicy.SidecarImage,
+		ImagePullSecrets:               cluster.Spec.PodPolicy.ImagePullSecrets,
 		BackupScheduleJobsHistoryLimit: cluster.Spec.BackupScheduleJobsHistoryLimit,
 		NFSServerAddress:               nfsServerAddress,
 		BackupType:                     BackupType,

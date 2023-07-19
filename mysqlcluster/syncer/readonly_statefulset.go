@@ -223,6 +223,7 @@ func GetReadonlyStatefulSet(cr *StatefulSetSyncer) (*appsv1.StatefulSet, error) 
 				Spec: corev1.PodSpec{
 					InitContainers:     initContainers,
 					Containers:         containers,
+					ImagePullSecrets:   cr.Spec.PodPolicy.ImagePullSecrets,
 					Volumes:            cr.EnsureVolumes(),
 					SchedulerName:      cr.Spec.PodPolicy.SchedulerName,
 					ServiceAccountName: cr.GetNameForResource(utils.ServiceAccount),

@@ -478,6 +478,11 @@ func (in *MysqlClusterSpec) DeepCopyInto(out *MysqlClusterSpec) {
 	in.Xenon.DeepCopyInto(&out.Xenon)
 	in.Backup.DeepCopyInto(&out.Backup)
 	in.Monitoring.DeepCopyInto(&out.Monitoring)
+	if in.ImagePullSecrets != nil {
+		in, out := &in.ImagePullSecrets, &out.ImagePullSecrets
+		*out = make([]v1.LocalObjectReference, len(*in))
+		copy(*out, *in)
+	}
 	if in.Tolerations != nil {
 		in, out := &in.Tolerations, &out.Tolerations
 		*out = make([]v1.Toleration, len(*in))

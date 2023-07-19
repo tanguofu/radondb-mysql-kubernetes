@@ -449,6 +449,7 @@ func (s *StatefulSetSyncer) ensurePodSpec() corev1.PodSpec {
 	return corev1.PodSpec{
 		InitContainers:     initContainers,
 		Containers:         containers,
+		ImagePullSecrets:   s.MysqlCluster.Spec.PodPolicy.ImagePullSecrets,
 		Volumes:            s.EnsureVolumes(),
 		SchedulerName:      s.Spec.PodPolicy.SchedulerName,
 		ServiceAccountName: s.GetNameForResource(utils.ServiceAccount),
