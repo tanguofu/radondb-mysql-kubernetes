@@ -25,6 +25,7 @@ import (
 	v1beta1 "github.com/radondb/radondb-mysql-kubernetes/api/v1beta1"
 	"github.com/radondb/radondb-mysql-kubernetes/utils"
 	batchv1 "k8s.io/api/batch/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -48,7 +49,7 @@ type BackupReconciler struct {
 	Owner    client.FieldOwner
 }
 type BackupResource struct {
-	cronjobs     []*batchv1.CronJob
+	cronjobs     []*batchv1beta1.CronJob
 	jobs         []*batchv1.Job
 	mysqlCluster *v1beta1.MysqlCluster
 }
@@ -142,7 +143,7 @@ func (r *BackupReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1beta1.Backup{}).
 		Owns(&batchv1.Job{}).
-		Owns(&batchv1.CronJob{}).
+		Owns(&batchv1beta1.CronJob{}).
 		Complete(r)
 }
 
@@ -192,7 +193,7 @@ func unstructuredToBackupResources(kind string, backupResource *BackupResource,
 			}
 			backupResource.jobs = append(backupResource.jobs, job)
 		case "CronJobList":
-			cronjob := &batchv1.CronJob{}
+			cronjob := &batchv1beta1.CronJob{}
 			if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, cronjob); err != nil {
 				return errors.WithStack(err)
 			}
@@ -338,7 +339,7 @@ func (r *BackupReconciler) patch(
 }
 
 func (r *BackupReconciler) reconcileCronBackup(ctx context.Context, backup *v1beta1.Backup,
-	cronBackupJobs []*batchv1.CronJob, BackupJobs []*batchv1.Job, cluster *v1beta1.MysqlCluster) error {
+	cronBackupJobs []*batchv1beta1.CronJob, BackupJobs []*batchv1.Job, cluster *v1beta1.MysqlCluster) error {
 	log := log.FromContext(ctx).WithValues("backip", "CronJob")
 
 	if backup.Spec.BackupSchedule == nil {
@@ -413,13 +414,13 @@ func (r *BackupReconciler) reconcileCronBackup(ctx context.Context, backup *v1be
 		return errors.WithStack(err)
 	}
 	suspend := (cluster.Status.State != v1beta1.ClusterReadyState) || (cluster.Spec.Standby != nil)
-	cronJob := &batchv1.CronJob{
+	cronJob := &batchv1beta1.CronJob{
 		ObjectMeta: objectMeta,
-		Spec: batchv1.CronJobSpec{
+		Spec: batchv1beta1.CronJobSpec{
 			Schedule:          backup.Spec.BackupSchedule.CronExpression,
 			Suspend:           &suspend,
-			ConcurrencyPolicy: batchv1.ForbidConcurrent,
-			JobTemplate: batchv1.JobTemplateSpec{
+			ConcurrencyPolicy: batchv1beta1.ForbidConcurrent,
+			JobTemplate: batchv1beta1.JobTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: labels,
 				},

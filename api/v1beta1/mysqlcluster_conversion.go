@@ -87,9 +87,11 @@ func Convert_v1alpha1_MysqlClusterSpec_To_v1beta1_MysqlClusterSpec(in *v1alpha1.
 	out.Log.BusyboxImage = in.PodPolicy.BusyboxImage
 	out.Log.Resources = in.PodPolicy.ExtraResources
 	out.Storage.AccessModes = in.Persistence.AccessModes
+	out.Storage.StorageClassName = in.Persistence.StorageClass
 	out.Storage.Resources.Requests = map[corev1.ResourceName]resource.Quantity{
 		corev1.ResourceStorage: resource.MustParse(in.Persistence.Size),
 	}
+
 	if len(in.BackupSecretName) != 0 {
 		out.DataSource.S3Backup.Name = in.RestoreFrom
 		out.DataSource.S3Backup.SecretName = in.BackupSecretName
