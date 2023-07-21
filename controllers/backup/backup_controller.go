@@ -19,20 +19,23 @@ package backup
 import (
 	"context"
 	"fmt"
-	"reflect"
+	"strings"
 
 	"github.com/pkg/errors"
 	v1beta1 "github.com/radondb/radondb-mysql-kubernetes/api/v1beta1"
 	"github.com/radondb/radondb-mysql-kubernetes/utils"
+	"gopkg.in/yaml.v2"
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -205,6 +208,8 @@ func unstructuredToBackupResources(kind string, backupResource *BackupResource,
 
 func (r *BackupReconciler) reconcileManualBackup(ctx context.Context,
 	backup *v1beta1.Backup, manualBackupJobs []*batchv1.Job, cluster *v1beta1.MysqlCluster) error {
+
+	log := log.FromContext(ctx).WithValues("reconcileManualBackup", "CronJob")
 	manualStatus := backup.Status.ManualBackup
 	var currentBackupJob *batchv1.Job
 	if len(backup.ObjectMeta.Labels["cluster"]) == 0 {
@@ -217,6 +222,14 @@ func (r *BackupReconciler) reconcileManualBackup(ctx context.Context,
 		// if the backup is a scheduled backup, ignore manual backups
 		return nil
 	}
+
+	// remove last if field more 5
+	schedules := strings.Fields(backup.Spec.BackupSchedule.CronExpression)
+	if len(schedules) > 5 {
+		backup.Spec.BackupSchedule.CronExpression = strings.Join(schedules[:5], " ")
+		log.Info("rewrite CronExpression", "orign", strings.Join(schedules, " "), "new", backup.Spec.BackupSchedule.CronExpression)
+	}
+
 	if len(manualBackupJobs) > 0 {
 		for _, job := range manualBackupJobs {
 			if job.GetOwnerReferences()[0].Name == backup.GetName() {
@@ -310,23 +323,22 @@ func (r *BackupReconciler) reconcileManualBackup(ctx context.Context,
 }
 
 func (r *BackupReconciler) apply(ctx context.Context, object client.Object) error {
-	// Generate an apply-patch by comparing the object to its zero value.
-	zero := reflect.New(reflect.TypeOf(object).Elem()).Interface()
-	data, err := client.MergeFrom(zero.(client.Object)).Data(object)
-	apply := client.RawPatch(client.Apply.Type(), data)
 
-	// Keep a copy of the object before any API calls.
-	patch := NewJSONPatch()
+	log := log.FromContext(ctx).WithName("apply")
 
-	// Send the apply-patch with force=true.
-	if err == nil {
-		err = r.patch(ctx, object, apply, client.ForceOwnership)
+	yamlBytes, _ := yaml.Marshal(object)
+	err := r.Client.Create(ctx, object)
+
+	if err != nil {
+		if apierrors.IsAlreadyExists(err) {
+			if err := r.Client.Update(ctx, object); err != nil {
+				log.Error(err, "failed to update", "object", string(yamlBytes[:32]))
+			}
+		} else {
+			log.Error(err, "failed to Create", "object", string(yamlBytes[:32]))
+		}
 	}
 
-	// Send the json-patch when necessary.
-	if err == nil && !patch.IsEmpty() {
-		err = r.patch(ctx, object, patch)
-	}
 	return err
 }
 
@@ -335,17 +347,33 @@ func (r *BackupReconciler) patch(
 	patch client.Patch, options ...client.PatchOption,
 ) error {
 	options = append([]client.PatchOption{r.Owner}, options...)
-	return r.Client.Patch(ctx, object, patch, options...)
+	err := r.Client.Patch(ctx, object, patch, options...)
+
+	if err != nil {
+		// yamlBytes, _ := yaml.Marshal(object)
+		// patchBytes, _ := patch.Data(object)
+		// log.Log.Error(err, fmt.Sprintf("BackupReconciler apply err: %v object:%s, patch:%s, options:%s", err, yamlBytes, patchBytes, options))
+		log.Log.Error(err, fmt.Sprintf("BackupReconciler apply err: %v options: %v", err, options))
+	}
+	return err
 }
 
 func (r *BackupReconciler) reconcileCronBackup(ctx context.Context, backup *v1beta1.Backup,
 	cronBackupJobs []*batchv1beta1.CronJob, BackupJobs []*batchv1.Job, cluster *v1beta1.MysqlCluster) error {
-	log := log.FromContext(ctx).WithValues("backip", "CronJob")
+	log := log.FromContext(ctx).WithValues("backup", "CronJob")
 
 	if backup.Spec.BackupSchedule == nil {
 		// if the backup is a manual backup, ignore scheduled backups
 		return nil
 	}
+
+	// remove last if field more 5
+	schedules := strings.Fields(backup.Spec.BackupSchedule.CronExpression)
+	if len(schedules) > 5 {
+		backup.Spec.BackupSchedule.CronExpression = strings.Join(schedules[:5], " ")
+		log.Info("rewrite eCronExpression", "orign", strings.Join(schedules, " "), "new", backup.Spec.BackupSchedule.CronExpression)
+	}
+
 	// Update backup.Status.ScheduledBackups
 	scheduledStatus := []v1beta1.ScheduledBackupStatus{}
 	for _, job := range BackupJobs {
@@ -433,8 +461,11 @@ func (r *BackupReconciler) reconcileCronBackup(ctx context.Context, backup *v1be
 		r.Client.Scheme()); err != nil {
 		return errors.WithStack(err)
 	}
+
 	if err := r.apply(ctx, cronJob); err != nil {
-		log.Error(err, "error when attempting to create Backup CronJob")
+		// jsonBytes, _ := json.MarshalIndent(cronJob, "", "  ")
+		log.Error(err, fmt.Sprintf("error: %v when attempting to create Backup CronJob", err))
+
 	}
 
 	return nil
