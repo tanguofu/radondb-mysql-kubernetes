@@ -156,8 +156,8 @@ func (r *BackupReconciler) getBackupResources(ctx context.Context,
 		Version: batchv1.SchemeGroupVersion.Version,
 		Kind:    "JobList",
 	}, {
-		Group:   batchv1.SchemeGroupVersion.Group,
-		Version: batchv1.SchemeGroupVersion.Version,
+		Group:   batchv1beta1.SchemeGroupVersion.Group,
+		Version: batchv1beta1.SchemeGroupVersion.Version,
 		Kind:    "CronJobList",
 	},
 	}
@@ -428,7 +428,7 @@ func (r *BackupReconciler) reconcileCronBackup(ctx context.Context, backup *v1be
 			},
 		},
 	}
-	cronJob.SetGroupVersionKind(batchv1.SchemeGroupVersion.WithKind("CronJob"))
+	cronJob.SetGroupVersionKind(batchv1beta1.SchemeGroupVersion.WithKind("CronJob"))
 	if err := controllerutil.SetControllerReference(backup, cronJob,
 		r.Client.Scheme()); err != nil {
 		return errors.WithStack(err)

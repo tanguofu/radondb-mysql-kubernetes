@@ -154,6 +154,7 @@ func Convert_v1beta1_MysqlClusterSpec_To_v1alpha1_MysqlClusterSpec(in *MysqlClus
 	out.PodPolicy.BusyboxImage = in.Log.BusyboxImage
 	out.MetricsOpts.Enabled = in.Monitoring.Exporter.Enabled
 	out.PodPolicy.ImagePullPolicy = in.ImagePullPolicy
+	out.PodPolicy.ImagePullSecrets = in.ImagePullSecrets
 	out.PodPolicy.Tolerations = in.Tolerations
 	out.PodPolicy.Affinity = (*corev1.Affinity)(unsafe.Pointer(in.Affinity))
 	out.PodPolicy.PriorityClassName = in.PriorityClassName
